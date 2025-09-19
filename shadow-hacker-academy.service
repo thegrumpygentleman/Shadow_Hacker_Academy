@@ -1,0 +1,56 @@
+[Unit]
+Description=Shadow Hacker Academy - Cybersecurity Awareness Game
+Documentation=https://github.com/your-org/shadow-hacker-academy
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=hacker
+Group=hacker
+WorkingDirectory=/opt/shadow-hacker-academy
+ExecStart=/usr/bin/node server.js
+ExecReload=/bin/kill -USR1 $MAINPID
+KillMode=mixed
+KillSignal=SIGINT
+TimeoutStopSec=30
+
+# Environment variables
+Environment=NODE_ENV=production
+Environment=PORT=3000
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/shadow-hacker-academy/logs /opt/shadow-hacker-academy/data
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallFilter=@system-service
+SystemCallFilter=~@debug @mount @cpu-emulation @obsolete @privileged @reboot @swap @raw-io
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+MemoryMax=512M
+CPUQuota=200%
+
+# Restart policy
+Restart=always
+RestartSec=10
+StartLimitInterval=60
+StartLimitBurst=3
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=shadow-hacker-academy
+
+[Install]
+WantedBy=multi-user.target
