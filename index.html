@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shadow Hacker Academy</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a2e 50%, #16213e 100%);
+            color: #00ff00;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .terminal-effect {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff00;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.9);
+            border-bottom: 2px solid #00ff00;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 0, 0.1), transparent);
+            animation: scan 3s infinite;
+        }
+
+        @keyframes scan {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 10px #00ff00;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #00ff00; }
+            to { text-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00; }
+        }
+
+        .subtitle {
+            color: #ff6b35;
+            font-size: 1.2rem;
+        }
+
+        .game-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .level-selector, .game-area, .results-area {
+            margin: 2rem 0;
+            padding: 2rem;
+        }
+
+        .level-card {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff00;
+            border-radius: 8px;
+            margin: 1rem 0;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .level-card:hover {
+            background: rgba(0, 255, 0, 0.1);
+            transform: translateX(10px);
+            box-shadow: 0 0 25px rgba(0, 255, 0, 0.4);
+        }
+
+        .level-title {
+            color: #ff6b35;
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .level-description {
+            color: #cccccc;
+            margin-bottom: 1rem;
+        }
+
+        .difficulty {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .difficulty-easy { background: #28a745; }
+        .difficulty-medium { background: #ffc107; color: #000; }
+        .difficulty-hard { background: #dc3545; }
+
+        .scenario-container {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 2rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border-left: 4px solid #ff6b35;
+        }
+
+        .hacker-prompt {
+            color: #ff6b35;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .options-container {
+            margin: 2rem 0;
+        }
+
+        .option-btn {
+            display: block;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .option-btn:hover {
+            background: rgba(0, 255, 0, 0.1);
+            transform: scale(1.02);
+        }
+
+        .option-btn.correct {
+            background: rgba(40, 167, 69, 0.3);
+            border-color: #28a745;
+        }
+
+        .option-btn.incorrect {
+            background: rgba(220, 53, 69, 0.3);
+            border-color: #dc3545;
+        }
+
+        .feedback {
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+            background: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+        }
+
+        .score-display {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #00ff00;
+            padding: 1rem;
+            border-radius: 8px;
+            min-width: 200px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff00;
+            border-radius: 10px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #ff6b35);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #00ff00, #00cc00);
+            color: #000;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #ff6b35, #ff5722);
+            color: #fff;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .typing-effect {
+            overflow: hidden;
+            border-right: 2px solid #00ff00;
+            white-space: nowrap;
+            animation: typing 3s steps(40, end), blink-caret 0.75s step-end infinite;
+        }
+
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        @keyframes blink-caret {
+            from, to { border-color: transparent; }
+            50% { border-color: #00ff00; }
+        }
+
+        .network-visualization {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .network-node {
+            width: 80px;
+            height: 80px;
+            border: 2px solid #00ff00;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 1rem;
+            background: rgba(0, 0, 0, 0.8);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .network-node:hover {
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+            transform: scale(1.1);
+        }
+
+        .network-node.vulnerable {
+            border-color: #ff6b35;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 107, 53, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 107, 53, 0); }
+        }
+
+        .achievement {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            z-index: 1000;
+            animation: achievementPop 0.5s ease-out;
+        }
+
+        @keyframes achievementPop {
+            0% { transform: translate(-50%, -50%) scale(0); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .leaderboard {
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #00ff00;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .leaderboard-entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(0, 255, 0, 0.3);
+        }
+
+        .terminal-input {
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 0.5rem;
+            font-family: inherit;
+            font-size: 1rem;
+            border-radius: 4px;
+            width: 100%;
+            margin: 0.5rem 0;
+        }
+
+        .terminal-input:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .score-display {
+                position: static;
+                margin: 1rem 0;
+            }
+            
+            .network-node {
+                width: 60px;
+                height: 60px;
+                margin: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="typing-effect">SHADOW HACKER ACADEMY</h1>
+        <div class="subtitle">Master Cybersecurity Through the Eyes of a Hacker</div>
+    </div>
+
+    <div class="score-display terminal-effect">
+        <div><strong>HACKER LEVEL:</strong> <span id="level">Noob</span></div>
+        <div><strong>SCORE:</strong> <span id="score">0</span></div>
+        <div><strong>STREAK:</strong> <span id="streak">0</span></div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress"></div>
+        </div>
+        <div><strong>USERNAME:</strong> <span id="username">Anonymous</span></div>
+    </div>
+
+    <div class="game-container">
+        <div id="welcome-screen" class="terminal-effect level-selector">
+            <h2>Welcome to the Underground</h2>
+            <p>Enter your hacker alias to begin your journey into the world of cybersecurity:</p>
+            <input type="text" id="usernameInput" class="terminal-input" placeholder="Enter your hacker alias..." maxlength="20">
+            <button class="btn" onclick="startGame()">JACK IN</button>
+            
+            <div style="margin-top: 2rem;">
+                <h3>Mission Briefing</h3>
+                <p>You're a white-hat hacker learning to think like the enemy to better defend systems. Each level teaches real cybersecurity concepts through hands-on scenarios. Remember: with great power comes great responsibility.</p>
+            </div>
+        </div>
+
+        <div id="level-selector" class="terminal-effect level-selector hidden">
+            <h2>Select Your Mission</h2>
+            
+            <div class="level-card" onclick="startLevel(1)">
+                <div class="level-title">Level 1: Social Engineering Basics</div>
+                <div class="level-description">Learn how attackers manipulate human psychology to gain unauthorized access</div>
+                <span class="difficulty difficulty-easy">EASY</span>
+            </div>
+
+            <div class="level-card" onclick="startLevel(2)">
+                <div class="level-title">Level 2: Password Cracking Techniques</div>
+                <div class="level-description">Understand common password vulnerabilities and attack methods</div>
+                <span class="difficulty difficulty-easy">EASY</span>
+            </div>
+
+            <div class="level-card" onclick="startLevel(3)">
+                <div class="level-title">Level 3: Network Reconnaissance</div>
+                <div class="level-description">Discover how hackers map network infrastructure</div>
+                <span class="difficulty difficulty-medium">MEDIUM</span>
+            </div>
+
+            <div class="level-card" onclick="startLevel(4)">
+                <div class="level-title">Level 4: Web Application Vulnerabilities</div>
+                <div class="level-description">Exploit common web security flaws</div>
+                <span class="difficulty difficulty-medium">MEDIUM</span>
+            </div>
+
+            <div class="level-card" onclick="startLevel(5)">
+                <div class="level-title">Level 5: Advanced Persistent Threats</div>
+                <div class="level-description">Understand sophisticated, long-term attack campaigns</div>
+                <span class="difficulty difficulty-hard">HARD</span>
+            </div>
+        </div>
+
+        <div id="game-area" class="terminal-effect game-area hidden">
+            <div id="scenario-content"></div>
+            <div id="options-container" class="options-container"></div>
+            <div id="feedback" class="feedback hidden"></div>
+            <div style="text-align: center; margin-top: 2rem;">
+                <button id="next-btn" class="btn hidden" onclick="nextQuestion()">NEXT CHALLENGE</button>
+                <button id="complete-btn" class="btn hidden" onclick="completeLevel()">MISSION COMPLETE</button>
+                <button id="back-btn" class="btn btn-secondary" onclick="backToLevels()">BACK TO MISSIONS</button>
+            </div>
+        </div>
+
+        <div id="results-area" class="terminal-effect results-area hidden">
+            <div id="results-content"></div>
+            <div style="text-align: center; margin-top: 2rem;">
+                <button class="btn" onclick="backToLevels()">SELECT NEW MISSION</button>
+            </div>
+        </div>
+
+        <div class="leaderboard terminal-effect">
+            <h3>Top Hackers</h3>
+            <div id="leaderboard-content">
+                <div class="leaderboard-entry">
+                    <span>1. CyberGhost</span>
+                    <span>2500 pts</span>
+                </div>
+                <div class="leaderboard-entry">
+                    <span>2. DataMiner</span>
+                    <span>2100 pts</span>
+                </div>
+                <div class="leaderboard-entry">
+                    <span>3. NullByte</span>
+                    <span>1900 pts</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let currentLevel = 1;
+        let currentQuestion = 0;
+        let score = 0;
+        let streak = 0;
+        let playerName = 'Anonymous';
+        let levelScores = {};
+
+        // Game data
+        const levels = {
+            1: {
+                title: "Social Engineering Basics",
+                description: "Master the art of human manipulation",
+                questions: [
+                    {
+                        scenario: "You're targeting a company employee. You call them pretending to be from IT support and ask for their password. What's the most effective social engineering technique?",
+                        prompt: "🎭 SOCIAL ENGINEER: Time to manipulate human psychology...",
+                        options: [
+                            "Create urgency: 'Your account will be locked in 5 minutes!'",
+                            "Appeal to authority: 'The CEO ordered this security update'",
+                            "Build rapport first: 'How's your day going? I'm here to help'",
+                            "Use technical jargon to confuse them"
+                        ],
+                        correct: 0,
+                        explanation: "Creating urgency is highly effective because it bypasses critical thinking. People make poor security decisions when under pressure.",
+                        points: 100
+                    },
+                    {
+                        scenario: "You want to gain physical access to a building. Which approach is most likely to succeed?",
+                        prompt: "🏢 PHYSICAL ACCESS: Choose your infiltration method...",
+                        options: [
+                            "Dress as a delivery person with packages",
+                            "Tailgate behind an employee",
+                            "Pick the lock after hours",
+                            "Pretend to be a new employee who lost their badge"
+                        ],
+                        correct: 0,
+                        explanation: "Delivery personnel are rarely questioned and often welcomed. It's a trusted role that bypasses suspicion.",
+                        points: 100
+                    },
+                    {
+                        scenario: "You're phishing for credentials. What makes an email most convincing?",
+                        prompt: "🎣 PHISHING MASTER: Craft the perfect deception...",
+                        options: [
+                            "Generic greeting: 'Dear Customer'",
+                            "Personalized with their name and recent activity",
+                            "Spelling errors to appear less sophisticated",
+                            "Threats of account closure"
+                        ],
+                        correct: 1,
+                        explanation: "Personalization builds trust and makes the email appear legitimate. Attackers research targets thoroughly.",
+                        points: 150
+                    }
+                ]
+            },
+            2: {
+                title: "Password Cracking Techniques",
+                description: "Break through password defenses",
+                questions: [
+                    {
+                        scenario: "You've captured a password hash. Which attack method should you try first?",
+                        prompt: "💻 PASSWORD CRACKER: Time to break some hashes...",
+                        options: [
+                            "Brute force attack (try all combinations)",
+                            "Dictionary attack (common passwords)",
+                            "Rainbow table lookup",
+                            "Hybrid attack (dictionary + modifications)"
+                        ],
+                        correct: 1,
+                        explanation: "Dictionary attacks are fastest for common passwords. Most users choose predictable passwords from common word lists.",
+                        points: 100
+                    },
+                    {
+                        scenario: "A user has a complex password: 'Tr0ub4dor&3'. What's the best approach?",
+                        prompt: "🔓 HASH BREAKER: Analyze this password's weakness...",
+                        options: [
+                            "It's too complex, try social engineering instead",
+                            "Use a rule-based attack with common substitutions",
+                            "Brute force the entire keyspace",
+                            "Look for the password in breached databases"
+                        ],
+                        correct: 1,
+                        explanation: "Despite appearing complex, this follows predictable patterns (3->3, a->4, o->0). Rule-based attacks exploit these patterns.",
+                        points: 150
+                    },
+                    {
+                        scenario: "You found a password list with 50,000 hashes. What's your strategy?",
+                        prompt: "🎯 MASS CRACKER: Optimize your attack strategy...",
+                        options: [
+                            "Crack each hash individually",
+                            "Use rainbow tables for all hashes simultaneously",
+                            "Start with fast dictionary attacks, then escalate",
+                            "Focus only on admin accounts"
+                        ],
+                        correct: 2,
+                        explanation: "Efficient crackers start fast and escalate. Dictionary attacks catch weak passwords quickly, then invest time in stronger ones.",
+                        points: 150
+                    }
+                ]
+            },
+            3: {
+                title: "Network Reconnaissance",
+                description: "Map the digital battlefield",
+                questions: [
+                    {
+                        scenario: "You're starting reconnaissance on a target network. What's your first step?",
+                        prompt: "🕵️ NETWORK SCOUT: Begin your reconnaissance mission...",
+                        options: [
+                            "Nmap port scan of all hosts",
+                            "Passive DNS enumeration",
+                            "Social media intelligence gathering",
+                            "Vulnerability scanning"
+                        ],
+                        correct: 1,
+                        explanation: "Passive reconnaissance leaves no traces. DNS enumeration reveals infrastructure without alerting security teams.",
+                        points: 100
+                    },
+                    {
+                        scenario: "Your port scan reveals SSH (22), HTTP (80), and HTTPS (443). What's next?",
+                        prompt: "🔍 SERVICE ANALYZER: Investigate these open services...",
+                        options: [
+                            "Immediately attempt SSH brute force",
+                            "Banner grab and service fingerprinting",
+                            "Launch a web vulnerability scanner",
+                            "Check for default credentials"
+                        ],
+                        correct: 1,
+                        explanation: "Banner grabbing reveals service versions and potential vulnerabilities without triggering security alerts.",
+                        points: 150
+                    },
+                    {
+                        scenario: "You discover an internal network segment. How do you map it stealthily?",
+                        prompt: "🗺️ NETWORK MAPPER: Navigate the internal topology...",
+                        options: [
+                            "Aggressive Nmap scan (-A -T5)",
+                            "Slow stealth scan (-sS -T1)",
+                            "ARP ping sweep only",
+                            "ICMP ping flood"
+                        ],
+                        correct: 1,
+                        explanation: "Stealth scans (-sS) don't complete TCP handshakes and slow timing (-T1) evades detection systems.",
+                        points: 200
+                    }
+                ]
+            },
+            4: {
+                title: "Web Application Vulnerabilities",
+                description: "Exploit the modern attack surface",
+                questions: [
+                    {
+                        scenario: "You find a login form. What vulnerability should you test first?",
+                        prompt: "🌐 WEB HACKER: Analyze this web application...",
+                        options: [
+                            "SQL injection in login fields",
+                            "Cross-site scripting (XSS)",
+                            "Brute force weak passwords",
+                            "Session hijacking"
+                        ],
+                        correct: 0,
+                        explanation: "SQL injection in auth forms can bypass login entirely and grant admin access. It's high-impact and common.",
+                        points: 100
+                    },
+                    {
+                        scenario: "You successfully inject: admin'--. What does this accomplish?",
+                        prompt: "💉 SQL INJECTOR: Exploit the database vulnerability...",
+                        options: [
+                            "Crashes the database server",
+                            "Bypasses password check by commenting it out",
+                            "Extracts the entire user table",
+                            "Performs a denial of service"
+                        ],
+                        correct: 1,
+                        explanation: "The comment (--) ignores the password portion of the SQL query, allowing login as admin without knowing the password.",
+                        points: 150
+                    },
+                    {
+                        scenario: "You find a file upload feature. What's the highest impact exploit?",
+                        prompt: "📁 FILE UPLOADER: Weaponize this upload functionality...",
+                        options: [
+                            "Upload a large file to consume disk space",
+                            "Upload a web shell disguised as an image",
+                            "Upload malicious JavaScript files",
+                            "Upload a virus-infected document"
+                        ],
+                        correct: 1,
+                        explanation: "Web shells provide remote code execution - the highest impact. Disguising as images bypasses basic filters.",
+                        points: 200
+                    }
+                ]
+            },
+            5: {
+                title: "Advanced Persistent Threats",
+                description: "Master long-term stealth campaigns",
+                questions: [
+                    {
+                        scenario: "You've gained initial access. What's crucial for maintaining persistence?",
+                        prompt: "👻 APT OPERATOR: Establish your persistent foothold...",
+                        options: [
+                            "Install obvious backdoors on multiple systems",
+                            "Create legitimate-looking scheduled tasks",
+                            "Modify system files directly",
+                            "Use only memory-resident malware"
+                        ],
+                        correct: 1,
+                        explanation: "Legitimate-looking persistence mechanisms blend with normal operations and avoid detection.",
+                        points: 150
+                    },
+                    {
+                        scenario: "You need to move laterally through the network undetected. Best approach?",
+                        prompt: "🔄 LATERAL MOVEMENT: Navigate deeper into the network...",
+                        options: [
+                            "Use stolen credentials with native tools",
+                            "Deploy malware on every system",
+                            "Scan aggressively for vulnerabilities",
+                            "Establish VPN tunnels"
+                        ],
+                        correct: 0,
+                        explanation: "Living off the land with legitimate tools and stolen credentials creates minimal forensic evidence.",
+                        points: 200
+                    },
+                    {
+                        scenario: "You're exfiltrating sensitive data. How do you avoid detection?",
+                        prompt: "📤 DATA EXFILTRATION: Extract intelligence covertly...",
+                        options: [
+                            "Large batch downloads during business hours",
+                            "Small, frequent transfers during normal traffic",
+                            "Encrypted FTP transfers at night",
+                            "Email attachments to external accounts"
+                        ],
+                        correct: 1,
+                        explanation: "Mimicking normal user behavior makes exfiltration invisible to security monitoring systems.",
+                        points: 250
+                    }
+                ]
+            }
+        };
+
+        function startGame() {
+            const username = document.getElementById('usernameInput').value.trim() || 'Anonymous';
+            playerName = username;
+            document.getElementById('username').textContent = username;
+            document.getElementById('welcome-screen').classList.add('hidden');
+            document.getElementById('level-selector').classList.remove('hidden');
+            updateLeaderboard();
+        }
+
+        function startLevel(levelNum) {
+            currentLevel = levelNum;
+            currentQuestion = 0;
+            document.getElementById('level-selector').classList.add('hidden');
+            document.getElementById('game-area').classList.remove('hidden');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const level = levels[currentLevel];
+            const question = level.questions[currentQuestion];
+            
+            document.getElementById('scenario-content').innerHTML = `
+                <div class="scenario-container">
+                    <div class="hacker-prompt">${question.prompt}</div>
+                    <p>${question.scenario}</p>
+                </div>
+            `;
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'option-btn';
+                button.textContent = `${String.fromCharCode(65 + index)}. ${option}`;
+                button.onclick = () => selectAnswer(index);
+                optionsContainer.appendChild(button);
+            });
+
+            document.getElementById('feedback').classList.add('hidden');
+            document.getElementById('next-btn').classList.add('hidden');
+            document.getElementById('complete-btn').classList.add('hidden');
+        }
+
+        function selectAnswer(selectedIndex) {
+            const level = levels[currentLevel];
+            const question = level.questions[currentQuestion];
+            const isCorrect = selectedIndex === question.correct;
+
+            // Disable all buttons
+            const buttons = document.querySelectorAll('.option-btn');
+            buttons.forEach((btn, index) => {
+                btn.disabled = true;
+                if (index === question.correct) {
+                    btn.classList.add('correct');
+                } else if (index === selectedIndex && !isCorrect) {
+                    btn.classList.add('incorrect');
+                }
+            });
+
+            // Show feedback
+            const feedback = document.getElementById('feedback');
+            feedback.innerHTML = `
+                <strong>${isCorrect ? '✅ CORRECT!' : '❌ INCORRECT'}</strong><br>
+                ${question.explanation}
+                <br><br>
+                <strong>Points earned:</strong> ${isCorrect ? question.points : 0}
+            `;
+            feedback.classList.remove('hidden');
+
+            // Update score
+            if (isCorrect) {
+                score += question.points;
+                streak++;
+                if (streak > 0 && streak % 3 === 0) {
+                    showAchievement(`🔥 ${streak} Question Streak!`);
+                }
+            } else {
+                streak = 0;
+            }
+
+            updateDisplay();
+
+            // Show next button
+            if (currentQuestion < level.questions.length - 1) {
+                document.getElementById('next-btn').classList.remove('hidden');
+            } else {
+                document.getElementById('complete-btn').classList.remove('hidden');
+            }
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            showQuestion();
+        }
+
+        function completeLevel() {
+            const level = levels[currentLevel];
+            levelScores[currentLevel] = score;
+            
+            document.getElementById('game-area').classList.add('hidden');
+            document.getElementById('results-area').classList.remove('hidden');
+
+            const totalQuestions = level.questions.length;
+            const maxPoints = level.questions.reduce((sum, q) => sum + q.points, 0);
+            const percentage = Math.round((score / maxPoints) * 100);
+
+            let rank = 'Script Kiddie';
+            if (percentage >= 90) rank = 'Elite Hacker';
+            else if (percentage >= 75) rank = 'Advanced Hacker';
+            else if (percentage >= 60) rank = 'Intermediate Hacker';
+            else if (percentage >= 40) rank = 'Novice Hacker';
+
+            document.getElementById('results-content').innerHTML = `
+                <h2>Mission ${currentLevel} Complete</h2>
+                <div class="scenario-container">
+                    <h3>${level.title}</h3>
+                    <p><strong>Final Score:</strong> ${score} points</p>
+                    <p><strong>Accuracy:</strong> ${percentage}%</p>
+                    <p><strong>Rank:</strong> ${rank}</p>
+                    <p><strong>Max Streak:</strong> ${streak}</p>
+                    
+                    <div style="margin-top: 2rem;">
+                        <h4>🎓 What You Learned:</h4>
+                        <p>${getLearningOutcome(currentLevel)}</p>
+                    </div>
+                    
+                    <div style="margin-top: 2rem;">
+                        <h4>🔒 Defense Recommendations:</h4>
+                        <p>${getDefenseRecommendations(currentLevel)}</p>
+                    </div>
+                </div>
+            `;
+
+            updateLeaderboard();
+            if (percentage >= 75) {
+                showAchievement(`🏆 Level ${currentLevel} Mastered!`);
+            }
+        }
+
+        function getLearningOutcome(levelNum) {
+            const outcomes = {
+                1: "You've mastered the psychology behind social engineering attacks. Understanding these techniques helps you recognize and resist manipulation attempts in real life.",
+                2: "You now understand how password attacks work and why complex, unique passwords with multi-factor authentication are essential for security.",
+                3: "Network reconnaissance skills help you think like an attacker. This knowledge is crucial for network hardening and intrusion detection.",
+                4: "Web application security is critical in our connected world. You've learned to identify and exploit common vulnerabilities that developers must address.",
+                5: "Advanced Persistent Threats represent the most sophisticated attacks. Understanding APT tactics helps organizations build comprehensive defense strategies."
+            };
+            return outcomes[levelNum] || "You've gained valuable cybersecurity knowledge!";
+        }
+
+        function getDefenseRecommendations(levelNum) {
+            const defenses = {
+                1: "Combat social engineering with security awareness training, verification procedures for sensitive requests, and a culture of security-first thinking.",
+                2: "Implement password policies, multi-factor authentication, account lockout mechanisms, and regular security audits of credential storage.",
+                3: "Use network segmentation, intrusion detection systems, regular vulnerability assessments, and monitor for reconnaissance activities.",
+                4: "Secure development practices, input validation, regular security testing, web application firewalls, and keeping software updated.",
+                5: "Deploy advanced threat detection, endpoint monitoring, network segmentation, zero-trust architecture, and incident response planning."
+            };
+            return defenses[levelNum] || "Implement layered security controls and regular security assessments.";
+        }
+
+        function backToLevels() {
+            document.getElementById('game-area').classList.add('hidden');
+            document.getElementById('results-area').classList.add('hidden');
+            document.getElementById('level-selector').classList.remove('hidden');
+        }
+
+        function updateDisplay() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('streak').textContent = streak;
+            
+            // Update progress bar (based on current level progress)
+            const level = levels[currentLevel];
+            if (level) {
+                const progress = ((currentQuestion + 1) / level.questions.length) * 100;
+                document.getElementById('progress').style.width = progress + '%';
+            }
+
+            // Update hacker level based on total score
+            let hackerLevel = 'Noob';
+            if (score >= 2000) hackerLevel = 'Elite Hacker';
+            else if (score >= 1500) hackerLevel = 'Advanced Hacker';
+            else if (score >= 1000) hackerLevel = 'Intermediate';
+            else if (score >= 500) hackerLevel = 'Novice';
+            else if (score >= 200) hackerLevel = 'Script Kiddie';
+            
+            document.getElementById('level').textContent = hackerLevel;
+        }
+
+        function showAchievement(text) {
+            const achievement = document.createElement('div');
+            achievement.className = 'achievement';
+            achievement.innerHTML = `
+                <h3>🎉 ACHIEVEMENT UNLOCKED!</h3>
+                <p>${text}</p>
+                <button class="btn" onclick="this.parentElement.remove()">Continue</button>
+            `;
+            document.body.appendChild(achievement);
+            
+            setTimeout(() => {
+                if (achievement.parentElement) {
+                    achievement.remove();
+                }
+            }, 5000);
+        }
+
+        function updateLeaderboard() {
+            const leaderboard = JSON.parse(localStorage.getItem('hackerLeaderboard') || '[]');
+            
+            // Add/update current player
+            const existingIndex = leaderboard.findIndex(entry => entry.name === playerName);
+            const playerEntry = { name: playerName, score: score };
+            
+            if (existingIndex >= 0) {
+                if (score > leaderboard[existingIndex].score) {
+                    leaderboard[existingIndex] = playerEntry;
+                }
+            } else {
+                leaderboard.push(playerEntry);
+            }
+            
+            // Sort and keep top 10
+            leaderboard.sort((a, b) => b.score - a.score);
+            leaderboard.splice(10);
+            
+            localStorage.setItem('hackerLeaderboard', JSON.stringify(leaderboard));
+            
+            // Display leaderboard
+            const leaderboardContent = document.getElementById('leaderboard-content');
+            leaderboardContent.innerHTML = '';
+            
+            leaderboard.forEach((entry, index) => {
+                const div = document.createElement('div');
+                div.className = 'leaderboard-entry';
+                div.innerHTML = `
+                    <span>${index + 1}. ${entry.name}</span>
+                    <span>${entry.score} pts</span>
+                `;
+                leaderboardContent.appendChild(div);
+            });
+        }
+
+        // Initialize game
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDisplay();
+            
+            // Add Enter key support for username input
+            document.getElementById('usernameInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    startGame();
+                }
+            });
+        });
+
+        // Network visualization for reconnaissance level
+        function createNetworkVisualization() {
+            const visualization = document.createElement('div');
+            visualization.className = 'network-visualization';
+            visualization.innerHTML = `
+                <div class="network-node" data-service="router">🌐</div>
+                <div class="network-node vulnerable" data-service="web">🖥️</div>
+                <div class="network-node" data-service="db">🗄️</div>
+                <div class="network-node vulnerable" data-service="mail">📧</div>
+                <div class="network-node" data-service="dns">🔍</div>
+            `;
+            return visualization;
+        }
+
+        // Add some easter eggs for engagement
+        let konamiCode = '';
+        const konamiSequence = 'ArrowUpArrowUpArrowDownArrowDownArrowLeftArrowRightArrowLeftArrowRightKeyBKeyA';
+
+        document.addEventListener('keydown', function(e) {
+            konamiCode += e.code;
+            if (konamiCode.length > konamiSequence.length) {
+                konamiCode = konamiCode.slice(-konamiSequence.length);
+            }
+            
+            if (konamiCode === konamiSequence) {
+                showAchievement('🕹️ Konami Code Master! +500 bonus points!');
+                score += 500;
+                updateDisplay();
+                konamiCode = '';
+            }
+        });
+
+        // Add matrix rain effect for extra hacker atmosphere
+        function addMatrixRain() {
+            const canvas = document.createElement('canvas');
+            canvas.style.position = 'fixed';
+            canvas.style.top = '0';
+            canvas.style.left = '0';
+            canvas.style.width = '100%';
+            canvas.style.height = '100%';
+            canvas.style.pointerEvents = 'none';
+            canvas.style.zIndex = '-1';
+            canvas.style.opacity = '0.1';
+            document.body.appendChild(canvas);
+
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const matrix = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()*&^%+-/~{[|`]}";
+            const matrixArray = matrix.split("");
+            const fontSize = 10;
+            const columns = canvas.width / fontSize;
+            const drops = [];
+
+            for (let x = 0; x < columns; x++) {
+                drops[x] = 1;
+            }
+
+            function draw() {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.04)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#00ff00';
+                ctx.font = fontSize + 'px monospace';
+
+                for (let i = 0; i < drops.length; i++) {
+                    const text = matrixArray[Math.floor(Math.random() * matrixArray.length)];
+                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    drops[i]++;
+                }
+            }
+
+            setInterval(draw, 35);
+        }
+
+        // Initialize matrix effect after a short delay
+        setTimeout(addMatrixRain, 2000);
+    </script>
+</body>
+</html>
