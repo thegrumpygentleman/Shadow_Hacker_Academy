@@ -212,4 +212,4 @@ This game is for educational purposes only. All techniques described should only
 
 **🎯 Ready to think like a hacker and defend like a pro?**
 
-Start your journey: `docker-compose up -d` and visit `http://localhost
+Start your journey: `docker-compose up -d` and visit `http://localhost:3000`
