@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shadow Hacker Academy</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a2e 50%, #16213e 100%);
+            color: #00ff00;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .terminal-effect {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff00;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.9);
+            border-bottom: 2px solid #00ff00;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 0, 0.1), transparent);
+            animation: scan 3s infinite;
+        }
+
+        @keyframes scan {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 10px #00ff00;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #00ff00; }
+            to { text-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00; }
+        }
+
+        .subtitle {
+            color: #ff6b35;
+            font-size: 1.2rem;
+        }
+
+        .game-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .level-selector, .game-area, .results-area {
+            margin: 2rem 0;
+            padding: 2rem;
+        }
+
+        .level-card {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff00;
+            border-radius: 8px;
+            margin: 1rem 0;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .level-card:hover {
+            background: rgba(0, 255, 0, 0.1);
+            transform: translateX(10px);
+            box-shadow: 0 0 25px rgba(0, 255, 0, 0.4);
+        }
+
+        .level-title {
+            color: #ff6b35;
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .level-description {
+            color: #cccccc;
+            margin-bottom: 1rem;
+        }
+
+        .difficulty {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .difficulty-easy { background: #28a745; }
+        .difficulty-medium { background: #ffc107; color: #000; }
+        .difficulty-hard { background: #dc3545; }
+
+        .scenario-container {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 2rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border-left: 4px solid #ff6b35;
+        }
+
+        .hacker-prompt {
+            color: #ff6b35;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .options-container {
+            margin: 2rem 0;
+        }
+
+        .option-btn {
+            display: block;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .option-btn:hover {
+            background: rgba(0, 255, 0, 0.1);
+            transform: scale(1.02);
+        }
+
+        .option-btn.correct {
+            background: rgba(40, 167, 69, 0.3);
+            border-color: #28a745;
+        }
+
+        .option-btn.incorrect {
+            background: rgba(220, 53, 69, 0.3);
+            border-color: #dc3545;
+        }
+
+        .feedback {
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+            background: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+        }
+
+        .score-display {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #00ff00;
+            padding: 1rem;
+            border-radius: 8px;
+            min-width: 200px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff00;
+            border-radius: 10px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #ff6b35);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #00ff00, #00cc00);
+            color: #000;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #ff6b35, #ff5722);
+            color: #fff;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .typing-effect {
+            overflow: hidden;
+            border-right: 2px solid #00ff00;
+            white-space: nowrap;
+            animation: typing 3s steps(40, end), blink-caret 0.75s step-end infinite;
+        }
+
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        @keyframes blink-caret {
+            from, to { border-color: transparent; }
+            50% { border-color: #00ff00; }
+        }
+
+        .network-visualization {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .network-node {
+            width: 80px;
+            height: 80px;
+            border: 2px solid #00ff00;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 1rem;
+            background: rgba(0, 0, 0, 0.8);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .network-node:hover {
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+            transform: scale(1.1);
+        }
+
+        .network-node.vulnerable {
+            border-color: #ff6b35;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 107, 53, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 107, 53, 0); }
+        }
+
+        .achievement {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            z-index: 1000;
+            animation: achievementPop 0.5s ease-out;
+        }
+
+        @keyframes achievementPop {
+            0% { transform: translate(-50%, -50%) scale(0); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .leaderboard {
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #00ff00;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .leaderboard-entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(0, 255, 0, 0.3);
+        }
+
+        .terminal-input {
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 0.5rem;
+            font-family: inherit;
+            font-size: 1rem;
+            border-radius: 4px;
+            width: 100%;
+            margin: 0.5rem 0;
+        }
+
+        .terminal-input:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .score-display {
+                position: static;
+                margin: 1rem 0;
+            }
+            
+            .network-node {
+                width: 60px;
+                height: 60px;
+                margin: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="typing-effect">SHADOW HACKER ACADEMY</h1>
+        <div class="subtitle">Master Cybersecurity Through the Eyes of a Hacker</div>
+    </div>
+
+    <div class="score-display terminal-effect">
+        <div><strong>HACKER LEVEL:</strong> <span id="level">Noob</span></div>
+        <div><strong>SCORE:</strong> <span id="score">0</span></div>
+        <div><strong>STREAK:</strong> <span id="streak">0</span></div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress"></div>
+        </div>
+        <div><strong>USERNAME:</strong> <span id="username">Anonymous</span></div>
+    </div>
+
+    <div class="game-container">
+        <div id="welcome-screen" class="terminal-effect level-selector">
+            <h2>Welcome to the Underground</h2>
+            <p>Enter your hacker alias to begin your journey into the world of cybersecurity:</p>
+            <input type="text" id="usernameInput" class="terminal-input" placeholder="Enter your hacker alias..." maxlength="20">
+            <button class="btn" onclick="startGame()">JACK IN</button>
+            
+            <div style="margin-top: 2rem;">
+                <h3>Mission Briefing</h3>
+                <p>Welcome, future cyber defender! You don't need any technical background - this game teaches cybersecurity by showing you how the "bad guys" think and operate. By understanding their tricks, you'll be better at spotting and avoiding them in real life.</p>
+                <p><strong>Why learn like a hacker?</strong> The best way to defend against attacks is to understand how they work. Don't worry - everything here is for educational purposes and defense!</p>
+            </div>
+        </div>
+
+        <div id="level-selector" class="terminal-effect level-selector hidden">
+            <h2>Select Your Mission</h2>
+            
+            <div class="level-card" onclick="startLevel(1)">
+                <div class="level-title">Level 1: Social Engineering - People Tricks</div>
+                <div class="level-description">Learn how scammers trick people into giving away passwords and access</div>
+                <span class="difficulty difficulty-easy">BEGINNER</span>
+            </div>
+
+            <div class="level-card" onclick="startLevel(2)">
+                <div class="level-title">Level 2: Password Security - Protecting Your Keys</div>
+                <div class="level-description">Understand why strong passwords matter and how weak ones get stolen</div>
+                <span class="difficulty difficulty-easy">BEGINNER</span>
+            </div>
+
+            <div class="level-card" onclick="startLevel(3)">
+                <div class="level-title">Level 3: Internet Snooping - Information Gathering</div>
+                <div class="level-description">See how attackers find information about you and your company online</div>
+                <span class="difficulty difficulty-medium">INTERMEDIATE</span>
+            </div>
+
+            <div class="level-card" onclick="startLevel(4)">
+                <div class="level-title">Level 4: Website Tricks - Breaking Web Apps</div>
+                <div class="level-description">Discover how hackers exploit websites and online services</div>
+                <span class="difficulty difficulty-medium">INTERMEDIATE</span>
+            </div>
+
+            <div class="level-card" onclick="startLevel(5)">
+                <div class="level-title">Level 5: Advanced Sneaky Attacks - Master Hackers</div>
+                <div class="level-description">Learn about sophisticated, long-term hacking campaigns</div>
+                <span class="difficulty difficulty-hard">ADVANCED</span>
+            </div>
+        </div>
+
+        <div id="game-area" class="terminal-effect game-area hidden">
+            <div id="scenario-content"></div>
+            <div id="options-container" class="options-container"></div>
+            <div id="feedback" class="feedback hidden"></div>
+            <div style="text-align: center; margin-top: 2rem;">
+                <button id="next-btn" class="btn hidden" onclick="nextQuestion()">NEXT CHALLENGE</button>
+                <button id="complete-btn" class="btn hidden" onclick="completeLevel()">MISSION COMPLETE</button>
+                <button id="back-btn" class="btn btn-secondary" onclick="backToLevels()">BACK TO MISSIONS</button>
+            </div>
+        </div>
+
+        <div id="results-area" class="terminal-effect results-area hidden">
+            <div id="results-content"></div>
+            <div style="text-align: center; margin-top: 2rem;">
+                <button class="btn" onclick="backToLevels()">SELECT NEW MISSION</button>
+            </div>
+        </div>
+
+        <div class="leaderboard terminal-effect">
+            <h3>Top Hackers</h3>
+            <div id="leaderboard-content">
+                <div class="leaderboard-entry">
+                    <span>1. CyberGhost</span>
+                    <span>2500 pts</span>
+                </div>
+                <div class="leaderboard-entry">
+                    <span>2. DataMiner</span>
+                    <span>2100 pts</span>
+                </div>
+                <div class="leaderboard-entry">
+                    <span>3. NullByte</span>
+                    <span>1900 pts</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let currentLevel = 1;
+        let currentQuestion = 0;
+        let score = 0;
+        let streak = 0;
+        let playerName = 'Anonymous';
+        let levelScores = {};
+
+        // Game data
+        const levels = {
+            1: {
+                title: "Social Engineering - People Tricks",
+                description: "Learn how attackers trick people into giving away information",
+                questions: [
+                    {
+                        scenario: "Someone calls you at work claiming to be from IT. They say there's a security problem with your account and need your password to fix it. They sound urgent and official. What should make you suspicious?",
+                        prompt: "🎭 SOCIAL TRICK: Recognize the warning signs...",
+                        options: [
+                            "They're creating pressure by saying it's urgent",
+                            "They're asking for your password over the phone",
+                            "They didn't verify your identity first",
+                            "All of the above - this is definitely a scam!"
+                        ],
+                        correct: 3,
+                        explanation: "Real IT support will NEVER ask for your password! They create urgency to make you panic and not think clearly. Always verify who you're talking to through official channels.",
+                        points: 100
+                    },
+                    {
+                        scenario: "A friendly person with a delivery box is waiting by your office door. They ask you to hold the door open for them since their hands are full. What's the safest response?",
+                        prompt: "🏢 OFFICE SECURITY: Make the right choice...",
+                        options: [
+                            "Hold the door - they seem legitimate and need help",
+                            "Ask them to put the box down and use their own badge",
+                            "Let them in but walk with them to reception",
+                            "Tell them to wait for someone else"
+                        ],
+                        correct: 1,
+                        explanation: "This is called 'tailgating' - using politeness to sneak in. Everyone should use their own access card, no exceptions. It's not rude to ask them to badge in properly!",
+                        points: 100
+                    },
+                    {
+                        scenario: "You get an email that looks like it's from your bank. It has your name and mentions recent transactions. It asks you to click a link to verify your account details. What makes this email suspicious?",
+                        prompt: "🎣 EMAIL TRICKS: Spot the fake email...",
+                        options: [
+                            "Banks never send emails asking you to click links",
+                            "The email address might not be from your real bank",
+                            "Legitimate emails wouldn't ask for account verification",
+                            "All of these are red flags"
+                        ],
+                        correct: 3,
+                        explanation: "Scammers make emails look personal and official to gain trust. Banks will never ask you to verify accounts through email links. When in doubt, call your bank directly!",
+                        points: 150
+                    }
+                ]
+            },
+            2: {
+                title: "Password Security - Protecting Your Keys",
+                description: "Understand why strong passwords matter and how they get stolen",
+                questions: [
+                    {
+                        scenario: "Your friend uses 'password123' for their email account. Why is this a terrible idea?",
+                        prompt: "💻 PASSWORD DETECTIVE: Identify the problems...",
+                        options: [
+                            "It's one of the most common passwords people use",
+                            "It's easy to guess and has no special characters",
+                            "Hackers have lists of common passwords to try first",
+                            "All of these make it incredibly easy to hack"
+                        ],
+                        correct: 3,
+                        explanation: "Hackers try common passwords first because they work so often! 'password123' is like leaving your door unlocked - it takes seconds to break into.",
+                        points: 100
+                    },
+                    {
+                        scenario: "Someone tells you their password is 'MyD0g!sC00l'. They think it's super secure. What would you tell them?",
+                        prompt: "🔓 PASSWORD CHECKER: Evaluate this password...",
+                        options: [
+                            "It's perfect - it has numbers, symbols, and letters!",
+                            "It's pretty good but could be longer",
+                            "It follows predictable patterns that hackers expect",
+                            "They should add their birthday to make it stronger"
+                        ],
+                        correct: 2,
+                        explanation: "While it looks complex, hackers know people substitute 0 for O, $ for S, etc. Truly random passwords or passphrases like 'Purple-Elephant-Dance-42' are much stronger!",
+                        points: 150
+                    },
+                    {
+                        scenario: "You have 20 different online accounts. What's the biggest password mistake people make?",
+                        prompt: "🎯 SECURITY REALITY: Think about human nature...",
+                        options: [
+                            "Making passwords too complicated to remember",
+                            "Using the same password for everything",
+                            "Writing passwords down on paper",
+                            "Changing passwords too often"
+                        ],
+                        correct: 1,
+                        explanation: "Using the same password everywhere means one breach compromises ALL your accounts! It's like having one key for your house, car, and office - lose it once, lose everything.",
+                        points: 150
+                    }
+                ]
+            },
+            3: {
+                title: "Internet Snooping - How Hackers Find Information",
+                description: "Learn how attackers gather information about their targets",
+                questions: [
+                    {
+                        scenario: "A hacker wants to learn about your company before attacking. Where would they start looking for information?",
+                        prompt: "🕵️ INFORMATION HUNTER: Think like a detective...",
+                        options: [
+                            "Company website and social media pages",
+                            "LinkedIn profiles of employees",
+                            "Public job postings that mention technology used",
+                            "All of these - they're all publicly available!"
+                        ],
+                        correct: 3,
+                        explanation: "Hackers are like detectives - they gather information from anywhere they can legally access. Social media, websites, and job posts reveal a lot about what technology and security a company uses!",
+                        points: 100
+                    },
+                    {
+                        scenario: "You post vacation photos on social media while you're away. A hacker sees these. What information have you accidentally given them?",
+                        prompt: "🔍 SOCIAL MEDIA DETECTIVE: Connect the dots...",
+                        options: [
+                            "Your house is empty right now",
+                            "Your location and travel patterns",
+                            "Information they could use to guess security questions",
+                            "All of these details help hackers"
+                        ],
+                        correct: 3,
+                        explanation: "Social media posts are goldmines for hackers! They learn when you're away, where you go, your pet's names, and family details - all useful for breaking into accounts.",
+                        points: 150
+                    },
+                    {
+                        scenario: "A hacker is trying to figure out what security your company uses. They notice the company WiFi name includes 'Cisco' and job postings mention 'Windows 10'. What have they learned?",
+                        prompt: "🗺️ TECHNOLOGY MAPPER: Understand the intelligence value...",
+                        options: [
+                            "Nothing useful - this is just random information",
+                            "What brands and versions of technology you use",
+                            "Potential security weaknesses to research",
+                            "Both B and C - this helps them plan attacks"
+                        ],
+                        correct: 3,
+                        explanation: "Every piece of technology information helps hackers! Knowing you use specific brands/versions lets them research known security flaws and plan targeted attacks.",
+                        points: 200
+                    }
+                ]
+            },
+            4: {
+                title: "Website Tricks - How Hackers Break Web Apps",
+                description: "Discover how attackers exploit websites and online services",
+                questions: [
+                    {
+                        scenario: "You're on a website's login page. A hacker wants to trick the website into letting them in without knowing any passwords. What's their sneaky approach?",
+                        prompt: "🌐 WEB TRICKSTER: Understand the deception...",
+                        options: [
+                            "Try to guess common passwords like 'admin'",
+                            "Trick the website's database with special characters",
+                            "Copy someone else's login session",
+                            "All of these are common website attacks"
+                        ],
+                        correct: 3,
+                        explanation: "Websites can be tricked in many ways! Hackers might guess passwords, confuse databases with weird input, or steal someone's login session. Good websites protect against all of these!",
+                        points: 100
+                    },
+                    {
+                        scenario: "A website lets you upload profile pictures. A hacker uploads what looks like a normal photo, but it's actually a secret program. What can this do?",
+                        prompt: "📁 FILE UPLOAD TRAP: Recognize the danger...",
+                        options: [
+                            "Nothing - it's just a picture file",
+                            "It could give the hacker control of the website",
+                            "It might steal other users' information",
+                            "Both B and C - it's very dangerous!"
+                        ],
+                        correct: 3,
+                        explanation: "File uploads can be very dangerous! Hackers disguise programs as innocent files. Once uploaded, these can take over websites or steal user data. Good websites check files carefully!",
+                        points: 200
+                    },
+                    {
+                        scenario: "You notice a website's address bar shows 'http://' instead of 'https://' when you're entering personal information. What does this mean?",
+                        prompt: "🔒 SECURITY INDICATOR: Spot the warning sign...",
+                        options: [
+                            "It doesn't matter - both are the same",
+                            "Your information isn't encrypted and could be stolen",
+                            "The website is probably fake or unsafe",
+                            "Both B and C are serious concerns"
+                        ],
+                        correct: 3,
+                        explanation: "HTTPS (with the 's') means your information is encrypted and secure. HTTP without the 's' means anyone can read your data! Always look for HTTPS on important websites.",
+                        points: 200
+                    }
+                ]
+            },
+            5: {
+                title: "Advanced Sneaky Attacks - The Stealthy Hackers",
+                description: "Learn about sophisticated, long-term hacking campaigns",
+                questions: [
+                    {
+                        scenario: "A really sneaky hacker has gotten into a company's computers. Instead of stealing everything at once, what would they do to avoid getting caught?",
+                        prompt: "👻 STEALTH MODE: Think like a long-term spy...",
+                        options: [
+                            "Take lots of data immediately and disappear",
+                            "Move slowly, blend in, and look like normal activity",
+                            "Make lots of noise to confuse security teams",
+                            "Only work during business hours"
+                        ],
+                        correct: 1,
+                        explanation: "Advanced hackers are like master spies - they blend in perfectly! They move slowly, act like normal users, and avoid doing anything that looks suspicious to security monitoring.",
+                        points: 150
+                    },
+                    {
+                        scenario: "The sneaky hacker wants to spread from one computer to others in the company. What's their smartest approach?",
+                        prompt: "🔄 NETWORK INFILTRATION: Choose the stealthy method...",
+                        options: [
+                            "Use stolen passwords and pretend to be real employees",
+                            "Install obvious hacking tools on every computer",
+                            "Send virus emails to everyone at once",
+                            "Break into computers using loud, noisy methods"
+                        ],
+                        correct: 0,
+                        explanation: "Smart hackers use stolen credentials to 'live off the land' - they use normal, everyday tools that employees use, so security systems don't notice anything unusual happening.",
+                        points: 200
+                    },
+                    {
+                        scenario: "The hacker has found valuable company secrets and wants to steal them without being detected. What's their best strategy?",
+                        prompt: "📤 DATA THEFT: Plan the perfect heist...",
+                        options: [
+                            "Download everything at once during the night",
+                            "Take small amounts regularly, mixed with normal work",
+                            "Email everything to themselves immediately",
+                            "Copy files to a USB drive during lunch break"
+                        ],
+                        correct: 1,
+                        explanation: "Master thieves steal data like water from a leaky faucet - small amounts over time that look like normal business activity. This makes it nearly impossible for security teams to notice!",
+                        points: 250
+                    }
+                ]
+            }
+        };
+
+        function startGame() {
+            const username = document.getElementById('usernameInput').value.trim() || 'Anonymous';
+            playerName = username;
+            document.getElementById('username').textContent = username;
+            document.getElementById('welcome-screen').classList.add('hidden');
+            document.getElementById('level-selector').classList.remove('hidden');
+            updateLeaderboard();
+        }
+
+        function startLevel(levelNum) {
+            currentLevel = levelNum;
+            currentQuestion = 0;
+            document.getElementById('level-selector').classList.add('hidden');
+            document.getElementById('game-area').classList.remove('hidden');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const level = levels[currentLevel];
+            const question = level.questions[currentQuestion];
+            
+            document.getElementById('scenario-content').innerHTML = `
+                <div class="scenario-container">
+                    <div class="hacker-prompt">${question.prompt}</div>
+                    <p>${question.scenario}</p>
+                </div>
+            `;
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'option-btn';
+                button.textContent = `${String.fromCharCode(65 + index)}. ${option}`;
+                button.onclick = () => selectAnswer(index);
+                optionsContainer.appendChild(button);
+            });
+
+            document.getElementById('feedback').classList.add('hidden');
+            document.getElementById('next-btn').classList.add('hidden');
+            document.getElementById('complete-btn').classList.add('hidden');
+        }
+
+        function selectAnswer(selectedIndex) {
+            const level = levels[currentLevel];
+            const question = level.questions[currentQuestion];
+            const isCorrect = selectedIndex === question.correct;
+
+            // Disable all buttons
+            const buttons = document.querySelectorAll('.option-btn');
+            buttons.forEach((btn, index) => {
+                btn.disabled = true;
+                if (index === question.correct) {
+                    btn.classList.add('correct');
+                } else if (index === selectedIndex && !isCorrect) {
+                    btn.classList.add('incorrect');
+                }
+            });
+
+            // Show feedback
+            const feedback = document.getElementById('feedback');
+            feedback.innerHTML = `
+                <strong>${isCorrect ? '✅ CORRECT!' : '❌ INCORRECT'}</strong><br>
+                ${question.explanation}
+                <br><br>
+                <strong>Points earned:</strong> ${isCorrect ? question.points : 0}
+            `;
+            feedback.classList.remove('hidden');
+
+            // Update score
+            if (isCorrect) {
+                score += question.points;
+                streak++;
+                if (streak > 0 && streak % 3 === 0) {
+                    showAchievement(`🔥 ${streak} Question Streak!`);
+                }
+            } else {
+                streak = 0;
+            }
+
+            updateDisplay();
+
+            // Show next button
+            if (currentQuestion < level.questions.length - 1) {
+                document.getElementById('next-btn').classList.remove('hidden');
+            } else {
+                document.getElementById('complete-btn').classList.remove('hidden');
+            }
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            showQuestion();
+        }
+
+        function completeLevel() {
+            const level = levels[currentLevel];
+            levelScores[currentLevel] = score;
+            
+            document.getElementById('game-area').classList.add('hidden');
+            document.getElementById('results-area').classList.remove('hidden');
+
+            const totalQuestions = level.questions.length;
+            const maxPoints = level.questions.reduce((sum, q) => sum + q.points, 0);
+            const percentage = Math.round((score / maxPoints) * 100);
+
+            let rank = 'Script Kiddie';
+            if (percentage >= 90) rank = 'Elite Hacker';
+            else if (percentage >= 75) rank = 'Advanced Hacker';
+            else if (percentage >= 60) rank = 'Intermediate Hacker';
+            else if (percentage >= 40) rank = 'Novice Hacker';
+
+            document.getElementById('results-content').innerHTML = `
+                <h2>Mission ${currentLevel} Complete</h2>
+                <div class="scenario-container">
+                    <h3>${level.title}</h3>
+                    <p><strong>Final Score:</strong> ${score} points</p>
+                    <p><strong>Accuracy:</strong> ${percentage}%</p>
+                    <p><strong>Rank:</strong> ${rank}</p>
+                    <p><strong>Max Streak:</strong> ${streak}</p>
+                    
+                    <div style="margin-top: 2rem;">
+                        <h4>🎓 What You Learned:</h4>
+                        <p>${getLearningOutcome(currentLevel)}</p>
+                    </div>
+                    
+                    <div style="margin-top: 2rem;">
+                        <h4>🔒 Defense Recommendations:</h4>
+                        <p>${getDefenseRecommendations(currentLevel)}</p>
+                    </div>
+                </div>
+            `;
+
+            updateLeaderboard();
+            if (percentage >= 75) {
+                showAchievement(`🏆 Level ${currentLevel} Mastered!`);
+            }
+        }
+
+        function getLearningOutcome(levelNum) {
+            const outcomes = {
+                1: "You've learned how scammers trick people into giving away information or access. Recognizing these tricks helps you stay safe from phone scams, fake emails, and people trying to sneak into secure areas.",
+                2: "You now understand why strong, unique passwords are so important and how easy it is for hackers to guess weak ones. Using different passwords everywhere and a password manager keeps you safe.",
+                3: "You've seen how much information is publicly available about you and your company online. Being careful about what you share helps protect your privacy and security.",
+                4: "You've learned how websites can be tricked and exploited. Understanding these risks helps you recognize safe websites and avoid dangerous ones.",
+                5: "You now know how the most dangerous hackers work - slowly and quietly over long periods. This knowledge helps organizations prepare for sophisticated attacks."
+            };
+            return outcomes[levelNum] || "You've gained valuable cybersecurity knowledge!";
+        }
+
+        function getDefenseRecommendations(levelNum) {
+            const defenses = {
+                1: "Protect against social tricks: Train everyone to verify requests, never give passwords over phone, always check with IT directly, and be suspicious of urgent requests.",
+                2: "Stay password-safe: Use unique passwords for every account, try passphrases like 'Coffee-Mountain-Sky-42', use a password manager, and enable two-factor authentication.",
+                3: "Control your information: Review privacy settings on social media, be careful what you post about work/travel, and think before sharing company details publicly.",
+                4: "Browse safely: Look for HTTPS (the lock icon), keep browsers updated, be careful what you download, and verify website addresses before entering personal information.",
+                5: "Defend against advanced attacks: Monitor for unusual activity, use security software, keep systems updated, train employees, and have an incident response plan."
+            };
+            return defenses[levelNum] || "Use multiple layers of security and stay vigilant.";
+        }
+
+        function backToLevels() {
+            document.getElementById('game-area').classList.add('hidden');
+            document.getElementById('results-area').classList.add('hidden');
+            document.getElementById('level-selector').classList.remove('hidden');
+        }
+
+        function updateDisplay() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('streak').textContent = streak;
+            
+            // Update progress bar (based on current level progress)
+            const level = levels[currentLevel];
+            if (level) {
+                const progress = ((currentQuestion + 1) / level.questions.length) * 100;
+                document.getElementById('progress').style.width = progress + '%';
+            }
+
+            // Update hacker level based on total score
+            let hackerLevel = 'Noob';
+            if (score >= 2000) hackerLevel = 'Elite Hacker';
+            else if (score >= 1500) hackerLevel = 'Advanced Hacker';
+            else if (score >= 1000) hackerLevel = 'Intermediate';
+            else if (score >= 500) hackerLevel = 'Novice';
+            else if (score >= 200) hackerLevel = 'Script Kiddie';
+            
+            document.getElementById('level').textContent = hackerLevel;
+        }
+
+        function showAchievement(text) {
+            const achievement = document.createElement('div');
+            achievement.className = 'achievement';
+            achievement.innerHTML = `
+                <h3>🎉 ACHIEVEMENT UNLOCKED!</h3>
+                <p>${text}</p>
+                <button class="btn" onclick="this.parentElement.remove()">Continue</button>
+            `;
+            document.body.appendChild(achievement);
+            
+            setTimeout(() => {
+                if (achievement.parentElement) {
+                    achievement.remove();
+                }
+            }, 5000);
+        }
+
+        function updateLeaderboard() {
+            const leaderboard = JSON.parse(localStorage.getItem('hackerLeaderboard') || '[]');
+            
+            // Add/update current player
+            const existingIndex = leaderboard.findIndex(entry => entry.name === playerName);
+            const playerEntry = { name: playerName, score: score };
+            
+            if (existingIndex >= 0) {
+                if (score > leaderboard[existingIndex].score) {
+                    leaderboard[existingIndex] = playerEntry;
+                }
+            } else {
+                leaderboard.push(playerEntry);
+            }
+            
+            // Sort and keep top 10
+            leaderboard.sort((a, b) => b.score - a.score);
+            leaderboard.splice(10);
+            
+            localStorage.setItem('hackerLeaderboard', JSON.stringify(leaderboard));
+            
+            // Display leaderboard
+            const leaderboardContent = document.getElementById('leaderboard-content');
+            leaderboardContent.innerHTML = '';
+            
+            leaderboard.forEach((entry, index) => {
+                const div = document.createElement('div');
+                div.className = 'leaderboard-entry';
+                div.innerHTML = `
+                    <span>${index + 1}. ${entry.name}</span>
+                    <span>${entry.score} pts</span>
+                `;
+                leaderboardContent.appendChild(div);
+            });
+        }
+
+        // Initialize game
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDisplay();
+            
+            // Add Enter key support for username input
+            document.getElementById('usernameInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    startGame();
+                }
+            });
+        });
+
+        // Network visualization for reconnaissance level
+        function createNetworkVisualization() {
+            const visualization = document.createElement('div');
+            visualization.className = 'network-visualization';
+            visualization.innerHTML = `
+                <div class="network-node" data-service="router">🌐</div>
+                <div class="network-node vulnerable" data-service="web">🖥️</div>
+                <div class="network-node" data-service="db">🗄️</div>
+                <div class="network-node vulnerable" data-service="mail">📧</div>
+                <div class="network-node" data-service="dns">🔍</div>
+            `;
+            return visualization;
+        }
+
+        // Add some easter eggs for engagement
+        let konamiCode = '';
+        const konamiSequence = 'ArrowUpArrowUpArrowDownArrowDownArrowLeftArrowRightArrowLeftArrowRightKeyBKeyA';
+
+        document.addEventListener('keydown', function(e) {
+            konamiCode += e.code;
+            if (konamiCode.length > konamiSequence.length) {
+                konamiCode = konamiCode.slice(-konamiSequence.length);
+            }
+            
+            if (konamiCode === konamiSequence) {
+                showAchievement('🕹️ Konami Code Master! +500 bonus points!');
+                score += 500;
+                updateDisplay();
+                konamiCode = '';
+            }
+        });
+
+        // Add matrix rain effect for extra hacker atmosphere
+        function addMatrixRain() {
+            const canvas = document.createElement('canvas');
+            canvas.style.position = 'fixed';
+            canvas.style.top = '0';
+            canvas.style.left = '0';
+            canvas.style.width = '100%';
+            canvas.style.height = '100%';
+            canvas.style.pointerEvents = 'none';
+            canvas.style.zIndex = '-1';
+            canvas.style.opacity = '0.1';
+            document.body.appendChild(canvas);
+
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const matrix = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()*&^%+-/~{[|`]}";
+            const matrixArray = matrix.split("");
+            const fontSize = 10;
+            const columns = canvas.width / fontSize;
+            const drops = [];
+
+            for (let x = 0; x < columns; x++) {
+                drops[x] = 1;
+            }
+
+            function draw() {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.04)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#00ff00';
+                ctx.font = fontSize + 'px monospace';
+
+                for (let i = 0; i < drops.length; i++) {
+                    const text = matrixArray[Math.floor(Math.random() * matrixArray.length)];
+                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    drops[i]++;
+                }
+            }
+
+            setInterval(draw, 35);
+        }
+
+        // Initialize matrix effect after a short delay
+        setTimeout(addMatrixRain, 2000);
+    </script>
+</body>
+</html>
